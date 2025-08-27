@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebDynpro xmlns="http://www.sap.com/wd/webdynpro">
+  <View name="OrdersOverview">
+    <Title>SAPUI5 App</Title>
+    <MatrixLayout id="MainLayout" rows="5" columns="2" padding="Medium">
+      <!-- Row 1: App Title and Menu Button -->
+      <MatrixRow id="Row1">
+        <MatrixData colSpan="1" rowSpan="1" vAlign="Middle" hAlign="Left">
+          <TextView id="AppTitle" text="SAPUI5 App" design="Header1"/>
+        </MatrixData>
+        <MatrixData colSpan="1" rowSpan="1" vAlign="Middle" hAlign="Right">
+          <!-- Using a standard Web Dynpro icon for a menu button, as indicated by the two horizontal lines -->
+          <Button id="MenuButton" icon="sap-icon://menu" tooltip="Menu" onAction="onMenuButtonPress"/>
+        </MatrixData>
+      </MatrixRow>
+
+      <!-- Row 2: Search Bar -->
+      <MatrixRow id="Row2">
+        <MatrixData colSpan="2" rowSpan="1" vAlign="Middle" hAlign="Left">
+          <FlowLayout id="SearchFlowLayout" hAlign="Left" vAlign="Middle" direction="Horizontal">
+            <InputField id="SearchInputField" width="20em" value="{/SearchCriteria/SearchTerm}" placeholder="Search" tooltip="Enter search term"/>
+            <Button id="GoButton" text="Go" onAction="onGoPress" design="Emphasized"/>
+          </FlowLayout>
+        </MatrixData>
+      </MatrixRow>
+
+      <!-- Row 3: Filter Section Title -->
+      <MatrixRow id="Row3">
+        <MatrixData colSpan="2" rowSpan="1" vAlign="Middle" hAlign="Left">
+          <TextView id="FilterTitle" text="Filter" design="Header2"/>
+        </MatrixData>
+      </MatrixRow>
+
+      <!-- Row 4: Filter - Status Dropdown -->
+      <MatrixRow id="Row4">
+        <MatrixData colSpan="1" rowSpan="1" vAlign="Middle" hAlign="Left">
+          <Label id="StatusLabel" text="Status" labelFor="StatusDropDown"/>
+        </MatrixData>
+        <MatrixData colSpan="1" rowSpan="1" vAlign="Middle" hAlign="Left">
+          <DropDownByIndex id="StatusDropDown" width="10em" value="{/FilterCriteria/SelectedStatusKey}" onSelect="onStatusFilterChange">
+            <Items>
+              <CollectionIterator id="StatusOptionsIterator" dataSource="{/StatusOptions}">
+                <ListItem text="{StatusText}" key="{StatusKey}"/>
+              </CollectionIterator>
+            </Items>
+          </DropDownByIndex>
+        </MatrixData>
+      </MatrixRow>
+
+      <!-- Row 5: Table -->
+      <MatrixRow id="Row5">
+        <MatrixData colSpan="2" rowSpan="1" vAlign="Top" hAlign="Left">
+          <Table id="OrdersTable" visibleRowCount="4" dataSource="{/Orders}">
+            <Columns>
+              <Column id="ColOrderID" hAlign="Left">
+                <TextView text="Order ID"/>
+                <TextView text="{OrderID}"/>
+              </Column>
+              <Column id="ColProduct" hAlign="Left">
+                <TextView text="Product"/>
+                <TextView text="{Product}"/>
+              </Column>
+              <Column id="ColStatus" hAlign="Left">
+                <TextView text="Status"/>
+                <TextView text="{Status}"/>
+              </Column>
+              <Column id="ColAmount" hAlign="Right">
+                <TextView text="Amount"/>
+                <TextView text="{Amount}"/>
+              </Column>
+            </Columns>
+          </Table>
+        </MatrixData>
+      </MatrixRow>
+    </MatrixLayout>
+  </View>
+  <Controller name="OrdersOverviewController">
+    <Methods>
+      <Method name="onGoPress" access="public">
+        <Parameters/>
+        <Source>
+          <!-- ABAP code to handle search action for the 'Go' button -->
+          DATA(lo_search_criteria_node) = wd_this->wd_get_api( )->get_context( )->get_child_node( name = 'SearchCriteria' ).
+          DATA(lo_search_criteria_element) = lo_search_criteria_node->get_element( ).
+          DATA(lv_search_term) = lo_search_criteria_element->get_attribute_as_string( name = 'SearchTerm' ).
+
+          " Example: Implement logic to filter the orders table based on lv_search_term
+          " wd_this->filter_orders_data( iv_search_term = lv_search_term ).
+        </Source>
+      </Method>
+      <Method name="onStatusFilterChange" access="public">
+        <Parameters/>
+        <Source>
+          <!-- ABAP code to handle status filter change for the dropdown -->
+          DATA(lo_filter_criteria_node) = wd_this->wd_get_api( )->get_context( )->get_child_node( name = 'FilterCriteria' ).
+          DATA(lo_filter_criteria_element) = lo_filter_criteria_node->get_element( ).
+          DATA(lv_selected_status_key) = lo_filter_criteria_element->get_attribute_as_string( name = 'SelectedStatusKey' ).
+
+          " Example: Implement logic to filter the orders table based on lv_selected_status_key
+          " wd_this->filter_orders_data( iv_status = lv_selected_status_key ).
+        </Source>
+      </Method>
+      <Method name="onMenuButtonPress" access="public">
+        <Parameters/>
+        <Source>
+          <!-- ABAP code to handle the menu button press -->
+          " Example: Implement logic to open a menu, side panel, or navigate to another view
+          " wd_this->open_side_navigation( ).
+        </Source>
+      </Method>
+      <Method name="wdDoInit" access="public">
+        <Parameters/>
+        <Source>
+          <!-- ABAP code to initialize context nodes with dummy data as shown in the screenshot -->
+          DATA lo_node TYPE REF TO if_wd_context_node.
+          DATA lo_elem TYPE REF TO if_wd_context_element.
+
+          " Initialize SearchCriteria node
+          lo_node = wd_this->wd_get_api( )->get_context( )->get_child_node( 'SearchCriteria' ).
+          lo_elem = lo_node->create_element( ).
+          lo_elem->set_attribute( name = 'SearchTerm' value = '' ).
+          lo_node->bind_element( lo_elem ).
+
+          " Initialize FilterCriteria node
+          lo_node = wd_this->wd_get_api( )->get_context( )->get_child_node( 'FilterCriteria' ).
+          lo_elem = lo_node->create_element( ).
+          lo_elem->set_attribute( name = 'SelectedStatusKey' value = 'Status' ). " Initial value matching the screenshot
+          lo_node->bind_element( lo_elem ).
+
+          " Populate StatusOptions node
+          lo_node = wd_this->wd_get_api( )->get_context( )->get_child_node( 'StatusOptions' ).
+          lo_elem = lo_node->create_element( ). lo_elem->set_attribute( name = 'StatusKey' value = 'Status' ). lo_elem->set_attribute( name = 'StatusText' value = 'Status' ). lo_node->add_element( lo_elem ).
+          lo_elem = lo_node->create_element( ). lo_elem->set_attribute( name = 'StatusKey' value = 'IN_PROCESS' ). lo_elem->set_attribute( name = 'StatusText' value = 'In Process' ). lo_node->add_element( lo_elem ).
+          lo_elem = lo_node->create_element( ). lo_elem->set_attribute( name = 'StatusKey' value = 'SHIPPED' ). lo_elem->set_attribute( name = 'StatusText' value = 'Shipped' ). lo_node->add_element( lo_elem ).
+          " Add more status options as needed: e.g., 'DELIVERED', 'CANCELLED'
+
+          " Populate Orders table data
+          lo_node = wd_this->wd_get_api( )->get_context( )->get_child_node( 'Orders' ).
+          lo_elem = lo_node->create_element( ). lo_elem->set_attribute( name = 'OrderID' value = '050' ). lo_elem->set_attribute( name = 'Product' value = 'Lamp' ). lo_elem->set_attribute( name = 'Status' value = 'In Process' ). lo_elem->set_attribute( name = 'Amount' value = '€ 45,00' ). lo_node->add_element( lo_elem ).
+          lo_elem = lo_node->create_element( ). lo_elem->set_attribute( name = 'OrderID' value = '081' ). lo_elem->set_attribute( name = 'Product' value = 'Phone' ). lo_elem->set_attribute( name = 'Status' value = 'Shipped' ). lo_elem->set_attribute( name = 'Amount' value = '€ 200,00' ). lo_node->add_element( lo_elem ).
+          lo_elem = lo_node->create_element( ). lo_elem->set_attribute( name = 'OrderID' value = '109' ). lo_elem->set_attribute( name = 'Product' value = 'Tablet' ). lo_elem->set_attribute( name = 'Status' value = 'Shipped' ). lo_elem->set_attribute( name = 'Amount' value = '€ 300,00' ). lo_node->add_element( lo_elem ).
+          lo_elem = lo_node->create_element( ). lo_elem->set_attribute( name = 'OrderID' value = '123' ). lo_elem->set_attribute( name = 'Product' value = 'Chair' ). lo_elem->set_attribute( name = 'Status' value = 'In Process' ). lo_elem->set_attribute( name = 'Amount' value = '€ 70,00' ). lo_node->add_element( lo_elem ).
+        </Source>
+      </Method>
+    </Methods>
+    <Context>
+      <Node name="SearchCriteria" type="SINGLETON" cardinality="1..1">
+        <Attribute name="SearchTerm" type="String" />
+      </Node>
+      <Node name="FilterCriteria" type="SINGLETON" cardinality="1..1">
+        <Attribute name="SelectedStatusKey" type="String" />
+      </Node>
+      <Node name="StatusOptions" type="LIST" cardinality="0..n">
+        <Attribute name="StatusKey" type="String" />
+        <Attribute name="StatusText" type="String" />
+      </Node>
+      <Node name="Orders" type="LIST" cardinality="0..n">
+        <Attribute name="OrderID" type="String" />
+        <Attribute name="Product" type="String" />
+        <Attribute name="Status" type="String" />
+        <Attribute name="Amount" type="String" /> <!-- Storing as string to preserve "€ 45,00" format -->
+      </Node>
+    </Context>
+  </Controller>
+</WebDynpro>
